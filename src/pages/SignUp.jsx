@@ -2,11 +2,11 @@ import axios from "axios";
 import React, { useState } from "react";
 import { useCookies } from "react-cookie";
 import { useSelector, useDispatch } from "react-redux";
-import { useNavigate, Redirect } from "react-router-dom";
+import { useNavigate, Redirect, Navigate } from "react-router-dom";
 import { signIn } from "../authSlice";
 import { Header } from "../components/Header";
 import { url } from "../const";
-import "./signUp.css";
+import "./signUp.scss";
 
 export const SignUp = () => {
   const navigate = useNavigate();
@@ -39,7 +39,7 @@ export const SignUp = () => {
         setErrorMessge(`サインアップに失敗しました。 ${err}`);
       });
 
-    if (auth) return <Redirect to='/' />;
+    if (auth) return <Navigate to='/' />;
   };
   return (
     <div>
