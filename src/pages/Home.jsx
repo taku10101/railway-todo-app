@@ -5,6 +5,7 @@ import axios from "axios";
 import { Header } from "../components/Header";
 import { url } from "../const";
 import "./home.scss";
+import PropTypes from "prop-types";
 
 export const Home = () => {
     const [isDoneDisplay, setIsDoneDisplay] = useState("todo"); // todo->未完了 done->完了
@@ -118,7 +119,13 @@ const Tasks = (props) => {
     const { tasks, selectListId, isDoneDisplay } = props;
     if (tasks === null) return <></>;
 
-    if (isDoneDisplay == "done") {
+    Tasks.propTypes = {
+        tasks: PropTypes.array,
+        selectListId: PropTypes.number,
+        isDoneDisplay: PropTypes.string,
+    };
+
+    if (isDoneDisplay === "done") {
         return (
             <ul>
                 {tasks
