@@ -6,26 +6,26 @@ import { signOut } from "../authSlice";
 import "./header.scss";
 
 export const Header = () => {
-  const auth = useSelector((state) => state.auth.isSignIn);
-  const dispatch = useDispatch();
-  const navigate = useNavigate();
-  const [removeCookie] = useCookies();
-  const handleSignOut = () => {
-    dispatch(signOut());
-    removeCookie("token");
-    navigate.push("/signin");
-  };
+    const auth = useSelector((state) => state.auth.isSignIn);
+    const dispatch = useDispatch();
+    const navigate = useNavigate();
+    const [removeCookie] = useCookies();
+    const handleSignOut = () => {
+        dispatch(signOut());
+        removeCookie("token");
+        navigate.push("/signin");
+    };
 
-  return (
-    <header className='header'>
-      <h1>Todoアプリ</h1>
-      {auth ? (
-        <button onClick={handleSignOut} className='sign-out-button'>
-          サインアウト
-        </button>
-      ) : (
-        <></>
-      )}
-    </header>
-  );
+    return (
+        <header className="header">
+            <h1>Todoアプリ</h1>
+            {auth ? (
+                <button onClick={handleSignOut} className="sign-out-button">
+                    サインアウト
+                </button>
+            ) : (
+                <></>
+            )}
+        </header>
+    );
 };
