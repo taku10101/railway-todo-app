@@ -1,11 +1,10 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { useCookies } from "react-cookie";
 import axios from "axios";
 import { Header } from "../components/Header";
 import { url } from "../const";
 import "../styles/home.scss";
-import PropTypes from "prop-types";
 
 export const Home = () => {
     const [isDoneDisplay, setIsDoneDisplay] = useState("todo"); // todo->未完了 done->完了
@@ -90,6 +89,12 @@ export const Home = () => {
                                     className={`list-tab-item ${isActive ? "active" : ""}`}
                                     onClick={() => handleSelectList(list.id)}
                                 >
+                                    <input
+                                        type="radio"
+                                        name="list-tab-item"
+                                        onChange={() => handleSelectList(list.id)}
+                                        checked={selectListId === list.id}
+                                    />
                                     {list.title}
                                 </li>
                             );
@@ -116,50 +121,73 @@ export const Home = () => {
 
 // 表示するタスク
 const Tasks = (props) => {
-    const { tasks, selectListId, isDoneDisplay } = props;
+    // eslint-disable-next-line
+    const tasks = props.tasks;
+    // eslint-disable-next-line
+    const selectListId = props.selectListId;
+    // eslint-disable-next-line
+    const isDoneDisplay = props.isDoneDisplay;
+    const isDone = isDoneDisplay === "done";
     if (tasks === null) return <></>;
-
-    Tasks.propTypes = {
-        tasks: PropTypes.array,
-        selectListId: PropTypes.number,
-        isDoneDisplay: PropTypes.string,
-    };
-
-    if (isDoneDisplay === "done") {
-        return (
-            <ul>
-                {tasks
-                    .filter((task) => {
-                        return task.done === true;
-                    })
-                    .map((task, key) => (
-                        <li key={key} className="task-item">
-                            <Link to={`/lists/${selectListId}/tasks/${task.id}`} className="task-item-link">
-                                {task.title}
-                                <br />
-                                {task.done ? "完了" : "未完了"}
-                            </Link>
-                        </li>
-                    ))}
-            </ul>
-        );
-    }
 
     return (
         <ul>
             {tasks
+                // eslint-disable-next-line
                 .filter((task) => {
-                    return task.done === false;
+                    return task.done === isDone;
                 })
-                .map((task, key) => (
-                    <li key={key} className="task-item">
-                        <Link to={`/lists/${selectListId}/tasks/${task.id}`} className="task-item-link">
-                            {task.title}
-                            <br />
-                            {task.done ? "完了" : "未完了"}
-                        </Link>
-                    </li>
-                ))}
+                .map((task, key) => {
+                    const date = new Date(task.limit);
+                    const pad = function (str) {
+                        return ("0" + str).slice(-2);
+                    };
+                    // 表示用
+                    const year = date.getFullYear().toString();
+                    const month = pad((date.getMonth() + 1).toString());
+                    const day = pad(date.getDate().toString());
+                    const hour = pad(date.getHours().toString());
+                    const min = pad(date.getMinutes().toString());
+                    const text = `${year}年${month}月${day}日 ${hour}:${min}`;
+
+                    // 現在時刻を取得
+                    const currentDate = new Date();
+
+                    // 差分を取得
+
+                    const timeDiff = Math.ceil((date - currentDate) / (1000 * 60));
+                    const resDiff = timeDiff < 0 ? -timeDiff : timeDiff;
+
+                    // 残りの日数、時間、分を計算
+                    const daysDiff = Math.floor(resDiff / (60 * 24));
+                    const hoursDiff = Math.floor((resDiff % (60 * 24)) / 60);
+                    const minDiff = Math.floor(resDiff % 60);
+
+                    // 残り時間のテキストを格納
+                    const textLimit =
+                        timeDiff >= 0
+                            ? `残り${daysDiff}日${hoursDiff}時間${minDiff}分`
+                            : `${Math.abs(daysDiff)}日${Math.abs(hoursDiff)}時間${Math.abs(minDiff)}分 遅れ`;
+
+                    return (
+                        <li key={key} className="task-item">
+                            <Link to={`/lists/${selectListId}/tasks/${task.id}`} className="task-item-link">
+                                <div className="task-item-link-left">
+                                    <span>{task.title}</span>
+                                </div>
+                                <span className="vertical">{task.done ? "完了" : "未完了"}</span>
+                                <div className="task-item-link-right">
+                                    <span>{text}</span>
+                                    {task.done ? (
+                                        ""
+                                    ) : (
+                                        <span style={{ color: timeDiff >= 0 ? "initial" : "red" }}>{textLimit}</span>
+                                    )}
+                                </div>
+                            </Link>
+                        </li>
+                    );
+                })}
         </ul>
     );
 };
