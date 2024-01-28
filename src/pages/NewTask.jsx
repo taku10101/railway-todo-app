@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useCookies } from "react-cookie";
 import axios from "axios";
 import { url } from "../const";
@@ -11,17 +11,24 @@ export const NewTask = () => {
     const [lists, setLists] = useState([]);
     const [title, setTitle] = useState("");
     const [detail, setDetail] = useState("");
+    const [limit, setLimit] = useState("");
     const [errorMessage, setErrorMessage] = useState("");
     const [cookies] = useCookies();
-    const navigate = useNavigate();
+    const navigation = useNavigate();
     const handleTitleChange = (e) => setTitle(e.target.value);
     const handleDetailChange = (e) => setDetail(e.target.value);
     const handleSelectList = (id) => setSelectListId(id);
-    const onCreateTask = () => {
+    const handleLimitChange = (e) => setLimit(e.target.value);
+
+    const onCreateTask = (e) => {
+        e.preventDefault();
+
+        const strLimit = limit !== "" ? new Date(limit).toISOString() : "";
         const data = {
             title: title,
             detail: detail,
             done: false,
+            limit: strLimit,
         };
 
         axios
@@ -31,7 +38,7 @@ export const NewTask = () => {
                 },
             })
             .then(() => {
-                navigate.push("/");
+                navigation("/");
             })
             .catch((err) => {
                 setErrorMessage(`タスクの作成に失敗しました。${err}`);
@@ -60,7 +67,7 @@ export const NewTask = () => {
             <main className="new-task">
                 <h2>タスク新規作成</h2>
                 <p className="error-message">{errorMessage}</p>
-                <form className="new-task-form">
+                <form className="new-task-form" onSubmit={onCreateTask}>
                     <label>リスト</label>
                     <br />
                     <select onChange={(e) => handleSelectList(e.target.value)} className="new-task-select-list">
@@ -79,7 +86,14 @@ export const NewTask = () => {
                     <br />
                     <textarea type="text" onChange={handleDetailChange} className="new-task-detail" />
                     <br />
-                    <button type="button" className="new-task-button" onClick={onCreateTask}>
+                    <div>
+                        <label>期限</label>
+                        <br />
+                        <input type={"datetime-local"} value={limit} onChange={handleLimitChange} />
+                    </div>
+                    <br />
+                    <br />
+                    <button type="submit" className="new-task-button">
                         作成
                     </button>
                 </form>
