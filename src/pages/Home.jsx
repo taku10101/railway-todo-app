@@ -68,6 +68,7 @@ export const Home = () => {
             const moveIndex = lists.findIndex((list) => list.id === selectListId); // 選択中のリストのインデックスを取得
             const previousIndex = (moveIndex - 1 + lists.length) % lists.length; // 選択中のリストの一つ前のインデックスを取得 %でリストの数を超えないようにする
             const previousId = lists[previousIndex].id; // 選択中のリストの一つ前のリストのIDを取得
+            console.log(lists[previousIndex]);
             handleSelectList(previousId);
         } else if (e.key === "ArrowDown") {
             const moveIndex = lists.findIndex((list) => list.id === selectListId);
@@ -129,45 +130,75 @@ export const Home = () => {
 };
 
 // 表示するタスク
+// 表示するタスク
 const Tasks = (props) => {
-    const { tasks, selectListId, isDoneDisplay } = props;
+    // eslint-disable-next-line
+    const tasks = props.tasks;
+    // eslint-disable-next-line
+    const selectListId = props.selectListId;
+    // eslint-disable-next-line
+    const isDoneDisplay = props.isDoneDisplay;
+    const isDone = isDoneDisplay === "done";
     if (tasks === null) return <></>;
-
-    if (isDoneDisplay === "done") {
-        return (
-            <ul>
-                {tasks
-                    .filter((task) => {
-                        return task.done === true;
-                    })
-                    .map((task, key) => (
-                        <li key={key} className="task-item" role="button">
-                            <Link to={`/lists/${selectListId}/tasks/${task.id}`} className="task-item-link">
-                                {task.title}
-                                <br />
-                                {task.done ? "完了" : "未完了"}
-                            </Link>
-                        </li>
-                    ))}
-            </ul>
-        );
-    }
 
     return (
         <ul>
             {tasks
+                // eslint-disable-next-line
                 .filter((task) => {
-                    return task.done === false;
+                    return task.done === isDone;
                 })
-                .map((task, key) => (
-                    <li key={key} className="task-item">
-                        <Link to={`/lists/${selectListId}/tasks/${task.id}`} className="task-item-link">
-                            {task.title}
-                            <br />
-                            {task.done ? "完了" : "未完了"}
-                        </Link>
-                    </li>
-                ))}
+                .map((task, key) => {
+                    const date = new Date(task.limit);
+                    const pad = function (str) {
+                        return ("0" + str).slice(-2);
+                    };
+                    // 表示用
+                    const year = date.getFullYear().toString();
+                    const month = pad((date.getMonth() + 1).toString());
+                    const day = pad(date.getDate().toString());
+                    const hour = pad(date.getHours().toString());
+                    const min = pad(date.getMinutes().toString());
+                    const text = `${year}年${month}月${day}日 ${hour}:${min}`;
+
+                    // 現在時刻を取得
+                    const currentDate = new Date();
+
+                    // 差分を取得
+
+                    const timeDiff = Math.ceil((date - currentDate) / (1000 * 60));
+                    const resDiff = timeDiff < 0 ? -timeDiff : timeDiff;
+
+                    // 残りの日数、時間、分を計算
+                    const daysDiff = Math.floor(resDiff / (60 * 24));
+                    const hoursDiff = Math.floor((resDiff % (60 * 24)) / 60);
+                    const minDiff = Math.floor(resDiff % 60);
+
+                    // 残り時間のテキストを格納
+                    const textLimit =
+                        timeDiff >= 0
+                            ? `残り${daysDiff}日${hoursDiff}時間${minDiff}分`
+                            : `${Math.abs(daysDiff)}日${Math.abs(hoursDiff)}時間${Math.abs(minDiff)}分 遅れ`;
+
+                    return (
+                        <li key={key} className="task-item">
+                            <Link to={`/lists/${selectListId}/tasks/${task.id}`} className="task-item-link">
+                                <div className="task-item-link-left">
+                                    <span>{task.title}</span>
+                                </div>
+                                <span className="vertical">{task.done ? "完了" : "未完了"}</span>
+                                <div className="task-item-link-right">
+                                    <span>{text}</span>
+                                    {task.done ? (
+                                        ""
+                                    ) : (
+                                        <span style={{ color: timeDiff >= 0 ? "initial" : "red" }}>{textLimit}</span>
+                                    )}
+                                </div>
+                            </Link>
+                        </li>
+                    );
+                })}
         </ul>
     );
 };
